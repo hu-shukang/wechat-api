@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  wechat-api
+
+  Sample SAM Template for wechat-api
+
+Parameters:
+  TOKEN:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/wechat/api/token'
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 100
+    Runtime: nodejs14.x
+    MemorySize: 128
+    Handler: index.handler
+    Layers:
+      - !Ref APISharedLayer
+    Environment:
+      Variables:
+        TOKEN: !Ref TOKEN
+
+Resources:
+  IDTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: IDTable
+      AttributeDefinitions:
+        - AttributeName: prefix
+          AttributeType: S
+      KeySchema:
+        - AttributeName: prefix
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  APISharedLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: APISharedLayer
+      Description: 'APISharedLayer'
+      ContentUri: src/layer/APISharedLayer
+      CompatibleRuntimes:
+        - nodejs14.x
+      RetentionPolicy: Retain
+  TokenAuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: wechatAPI-TokenAuthorizerFunction
+      CodeUri: src/function/authorizer/token
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
+  WechatApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Dev
+      Auth:
+        DefaultAuthorizer: TokenAuthorizer
+        Authorizers:
+          TokenAuthorizer:
+            FunctionArn: !GetAtt TokenAuthorizerFunction.Arn
+            Identity:
+              ReauthorizeEvery: 0
+  ExamCategoryAddFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: wechatAPI-ExamCategoryAddFunction
+      CodeUri: src/function/exam-category/add
+      Description: 'add exam category function'
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+      Events:
+        api:
+          Type: Api
+          Properties:
+            Path: /exam-category
+            Method: post
+            RestApiId: !Ref wechatApi
