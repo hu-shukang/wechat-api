@@ -13,6 +13,7 @@
     "ajv-errors": "^3.0.0",
     "ajv-formats": "^2.1.1",
     "aws-sdk": "^2.1118.0",
+    "dayjs": "^1.11.3",
     "model": "file:./src/model",
     "numeral": "^2.0.6",
     "service": "file:./src/service",

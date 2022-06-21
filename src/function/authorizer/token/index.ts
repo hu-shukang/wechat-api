@@ -23,7 +23,5 @@ export const handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<an
       userId: 'hushukang',
     },
   };
-  console.log(effect);
-  console.log(event.methodArn);
   return result;
 };
