@@ -1,9 +1,13 @@
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
-import { KeyValue } from 'model';
+import { KeyValue, UserEntity } from 'model';
 import { Const } from 'utils';
 import { BaseRepository } from './base.repository';
 
 export class UserRepository extends BaseRepository {
+  public async createUser(userEntity: UserEntity) {
+    await this.saveOne(Const.USER_TABLE, userEntity);
+  }
+
   public async updateById(id: string, items: KeyValue) {
     const updateExpression: string[] = [];
     const expressionAttributeNames: KeyValue = {

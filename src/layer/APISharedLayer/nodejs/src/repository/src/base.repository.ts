@@ -47,4 +47,12 @@ export class BaseRepository {
     }
     return undefined;
   }
+
+  protected async saveOne(tableName: string, item: any) {
+    const params: DocumentClient.PutItemInput = {
+      TableName: tableName,
+      Item: item,
+    };
+    await this.docClient.put(params).promise();
+  }
 }
