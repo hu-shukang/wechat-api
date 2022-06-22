@@ -5,7 +5,11 @@ import { BaseRepository } from './base.repository';
 
 export class UserRepository extends BaseRepository {
   public async createUser(userEntity: UserEntity) {
-    await this.saveOne(Const.USER_TABLE, userEntity);
+    const params: DocumentClient.PutItemInput = {
+      TableName: Const.USER_TABLE,
+      Item: userEntity,
+    };
+    await this.docClient.put(params).promise();
   }
 
   public async updateById(id: string, items: KeyValue) {
@@ -39,14 +43,44 @@ export class UserRepository extends BaseRepository {
     const key = {
       id: userId,
     };
-    await this.deletePropertyByKey(Const.USER_TABLE, key, propertyName);
+    const params: DocumentClient.UpdateItemInput = {
+      TableName: Const.USER_TABLE,
+      Key: key,
+      UpdateExpression: 'remove #property',
+      ExpressionAttributeNames: {
+        '#property': propertyName,
+      },
+    };
+    await this.docClient.update(params).promise();
   }
 
-  public async getUserById<T>(userId: string, ...projections: string[]): Promise<T | undefined> {
-    const key = {
-      id: userId,
+  public async getUserById(userId: string): Promise<UserEntity | undefined> {
+    const params: DocumentClient.GetItemInput = {
+      TableName: Const.USER_TABLE,
+      Key: {
+        id: userId,
+      },
     };
-    const result = await this.selectOneByKey<T>(Const.USER_TABLE, key, ...projections);
-    return result;
+    const result = await this.docClient.get(params).promise();
+    if (result.Item) {
+      return result.Item as UserEntity;
+    }
+    return undefined;
+  }
+
+  public async existUserName(name: string): Promise<boolean> {
+    const params: DocumentClient.QueryInput = {
+      TableName: Const.USER_TABLE,
+      IndexName: Const.USER_TABLE_NAME_INDEX,
+      KeyConditionExpression: '#name = :name',
+      ExpressionAttributeNames: {
+        '#name': 'name',
+      },
+      ExpressionAttributeValues: {
+        ':name': name,
+      },
+    };
+    const result = await this.docClient.query(params).promise();
+    return result.Count != undefined && result.Count > 0;
   }
 }

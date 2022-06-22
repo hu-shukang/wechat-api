@@ -13,7 +13,9 @@
     "ajv-errors": "^3.0.0",
     "ajv-formats": "^2.1.1",
     "aws-sdk": "^2.1118.0",
+    "crypto": "^1.0.1",
     "dayjs": "^1.11.3",
+    "jsonwebtoken": "^8.5.1",
     "model": "file:./src/model",
     "numeral": "^2.0.6",
     "service": "file:./src/service",
@@ -22,6 +24,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.8",
     "@types/numeral": "^2.0.2",
     "@types/underscore.string": "^0.0.38",
     "@types/uuid": "^8.3.4"

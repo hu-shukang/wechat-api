@@ -77,7 +77,7 @@ export class ValidatorUtil {
     return errorList;
   }
 
-  public async parse<T>(schema: JSONSchemaType<T>, body: string | null): Promise<T> {
+  public parse<T>(schema: JSONSchemaType<T>, body: string | null): T {
     if (!body) {
       throw new HttpError(Const.HTTP_STATUS_400, Const.ERROR_INVALIDATE_DATA);
     }
@@ -89,7 +89,7 @@ export class ValidatorUtil {
     }
     const validate = this.ajv.compile<T>(schema);
     try {
-      const result = await validate(data);
+      const result = validate(data);
       if (result) {
         return data as T;
       }

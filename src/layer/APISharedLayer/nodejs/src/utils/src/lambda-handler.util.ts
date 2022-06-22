@@ -1,11 +1,16 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { Func, TokenPayload } from 'model';
+import { jwtUtil } from './jwt.util';
 
-export type Func = (event: APIGatewayProxyEvent, context: Context) => Promise<any>;
-
-export const lambdaHandler = (func: Func): APIGatewayProxyHandler => {
+export const lambdaHandler = <T>(func: Func<T>, withLogin = true): APIGatewayProxyHandler => {
   return async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
     try {
-      const result = await func(event, context);
+      let tokenPayload: TokenPayload | null = null;
+      if (withLogin) {
+        const token = event.headers.Authorization;
+        tokenPayload = jwtUtil.verityToken(token);
+      }
+      const result = await func(event, tokenPayload, context);
       return {
         statusCode: 200,
         body: JSON.stringify(result),
@@ -23,6 +28,20 @@ export const lambdaHandler = (func: Func): APIGatewayProxyHandler => {
           statusCode: 400,
           body: JSON.stringify({
             error: e.getInfoList(),
+          }),
+        };
+      } else if (e.constructor.name == 'TokenExpiredError') {
+        return {
+          statusCode: 401,
+          body: JSON.stringify({
+            error: 'トークンの有効期限が切れています',
+          }),
+        };
+      } else if (e.constructor.name == 'JsonWebTokenError') {
+        return {
+          statusCode: 401,
+          body: JSON.stringify({
+            error: 'トークンが不正です',
           }),
         };
       } else {
