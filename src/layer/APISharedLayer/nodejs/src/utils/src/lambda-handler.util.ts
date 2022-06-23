@@ -4,18 +4,25 @@ import { jwtUtil } from './jwt.util';
 
 export const lambdaHandler = <T>(func: Func<T>, withLogin = true): APIGatewayProxyHandler => {
   return async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+    console.log('=======start======');
+    console.log(JSON.stringify(context));
+    console.log(JSON.stringify(event));
     try {
       let tokenPayload: TokenPayload | null = null;
       if (withLogin) {
         const token = event.headers.Authorization;
         tokenPayload = jwtUtil.verityToken(token);
       }
+      console.log('tokenPayload', tokenPayload);
       const result = await func(event, tokenPayload, context);
+      console.log('=======end======');
       return {
         statusCode: 200,
         body: JSON.stringify(result),
       };
     } catch (e: any) {
+      console.log('=======error======');
+      console.log(e.message);
       if (e.constructor.name == 'HttpError') {
         return {
           statusCode: e.getStatusCode(),
@@ -53,6 +60,8 @@ export const lambdaHandler = <T>(func: Func<T>, withLogin = true): APIGatewayPro
           }),
         };
       }
+    } finally {
+      console.log('=======finally======');
     }
   };
 };

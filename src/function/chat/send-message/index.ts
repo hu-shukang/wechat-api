@@ -10,6 +10,7 @@ const func: Func<string> = async (
   _context: Context
 ): Promise<string> => {
   const userId = tokenPayload!.userId;
+  console.log(event.body);
   const form = validatorUtil.parse(schema, event.body);
   await chatService.sendMessage(userId, form);
   return 'Sent';

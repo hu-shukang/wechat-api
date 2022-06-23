@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { chatService, userService } from 'service';
+import { chatService } from 'service';
 import { Func, TokenPayload } from 'model';
-import { lambdaHandler, validatorUtil } from 'utils';
+import { lambdaHandler } from 'utils';
 
 const func: Func<string> = async (
   event: APIGatewayProxyEvent,
@@ -9,8 +9,9 @@ const func: Func<string> = async (
   _context: Context
 ): Promise<string> => {
   const userId = tokenPayload!.userId;
+  console.log('userId', userId);
   await chatService.disconnect(userId);
   return 'Disconnected';
 };
 
-export const handler = lambdaHandler(func);
+export const handler = lambdaHandler(func, false);

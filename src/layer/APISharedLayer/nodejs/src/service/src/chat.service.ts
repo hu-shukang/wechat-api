@@ -17,6 +17,7 @@ export class ChatService extends BaseService {
   }
 
   public async sendMessage(userId: string, form: MessageForm) {
+    console.log(JSON.stringify(form));
     const toUser = await userRepository.getUserById(form.to);
     if (toUser && toUser.connectionId) {
       const params: ApiGatewayManagementApi.PostToConnectionRequest = {

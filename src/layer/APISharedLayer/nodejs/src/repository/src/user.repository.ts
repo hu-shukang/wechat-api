@@ -36,6 +36,7 @@ export class UserRepository extends BaseRepository {
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
     };
+    console.log(params);
     await this.docClient.update(params).promise();
   }
 
@@ -51,6 +52,7 @@ export class UserRepository extends BaseRepository {
         '#property': propertyName,
       },
     };
+    console.log(params);
     await this.docClient.update(params).promise();
   }
 

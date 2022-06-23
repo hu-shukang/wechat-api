@@ -68,6 +68,69 @@ Resources:
       #       FunctionArn: !GetAtt TokenAuthorizerFunction.Arn
       #       Identity:
       #         ReauthorizeEvery: 0
+  WeChatWebSocket:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: WeChatAPI-WebSocket
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: '$request.body.action'
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WeChatWebSocket
+      RouteKey: $connect
+      AuthorizationType: NONE
+      OperationName: ConnectRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref ConnectInteg
+  ConnectInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WeChatWebSocket
+      Description: Connect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ChatConnectFunction.Arn}/invocations
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WeChatWebSocket
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: DisconnectRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref DisconnectInteg
+  DisconnectInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WeChatWebSocket
+      Description: Disconnect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ChatDisconnectFunction.Arn}/invocations
+  SendRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WeChatWebSocket
+      RouteKey: sendmessage
+      AuthorizationType: NONE
+      OperationName: SendRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref SendInteg
+  SendInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WeChatWebSocket
+      Description: Send Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ChatSendMessageFunction.Arn}/invocations
   UserRegisterFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -91,13 +154,6 @@ Resources:
       Description: 'chat connect function'
       Policies:
         - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
-      Events:
-        api:
-          Type: Api
-          Properties:
-            Path: /chat/connect
-            Method: get
-            RestApiId: !Ref WeChatApi
   ChatDisconnectFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -106,13 +162,6 @@ Resources:
       Description: 'chat disconnect function'
       Policies:
         - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
-      Events:
-        api:
-          Type: Api
-          Properties:
-            Path: /chat/disconnect
-            Method: get
-            RestApiId: !Ref WeChatApi
   ChatSendMessageFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -121,10 +170,42 @@ Resources:
       Description: 'chat send message function'
       Policies:
         - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
-      Events:
-        api:
-          Type: Api
-          Properties:
-            Path: /chat/message
-            Method: post
-            RestApiId: !Ref WeChatApi
+  ChatConnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - WeChatWebSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ChatConnectFunction
+      Principal: apigateway.amazonaws.com
+  ChatDisconnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - WeChatWebSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ChatDisconnectFunction
+      Principal: apigateway.amazonaws.com
+  ChatSendMessagePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - WeChatWebSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ChatSendMessageFunction
+      Principal: apigateway.amazonaws.com
+  Deployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - SendRoute
+      - DisconnectRoute
+    Properties:
+      ApiId: !Ref WeChatWebSocket
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: Dev
+      Description: Dev Stage
+      DeploymentId: !Ref Deployment
+      ApiId: !Ref WeChatWebSocket
