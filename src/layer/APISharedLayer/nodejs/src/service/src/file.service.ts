@@ -7,7 +7,7 @@ export class FileService extends BaseService {
   public getAvatorSignedURL(userId: string, form: AvatorSingedUrlForm): string {
     const extensions = form.extensions;
     const path = `/user/${userId}/avator.${extensions}`;
-    return this.getSignedURL('putObject', Const.RESOURCE_BUCKRT, path, extensions);
+    return this.getSignedURL('putObject', Const.ASSETS_BUCKRT, path, extensions);
   }
 
   private getSignedURL(operation: string, bucketName: string, path: string, contentType?: string): string {

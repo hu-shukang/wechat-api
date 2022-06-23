@@ -3,7 +3,7 @@ version = 0.1
 [default.deploy]
 [default.deploy.parameters]
 stack_name = "wechat-api"
-s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-sz3rr8x8w1qf"
+s3_bucket = "wechat-api-resource"
 s3_prefix = "wechat-api"
 region = "ap-northeast-1"
 confirm_changeset = false

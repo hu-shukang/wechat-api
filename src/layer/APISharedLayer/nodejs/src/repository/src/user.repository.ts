@@ -8,10 +8,6 @@ export class UserRepository extends BaseRepository {
     const params: DocumentClient.PutItemInput = {
       TableName: Const.USER_TABLE,
       Item: userEntity,
-      ConditionExpression: 'attribute_not_exists(#id)',
-      ExpressionAttributeNames: {
-        '#id': 'id',
-      },
     };
     await this.docClient.put(params).promise();
   }

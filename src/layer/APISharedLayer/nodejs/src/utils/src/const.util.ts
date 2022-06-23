@@ -6,7 +6,7 @@ export class Const {
   public static USER_TABLE_NAME_INDEX = 'name_index';
 
   // bucket name
-  public static RESOURCE_BUCKRT = 'wechat-resource';
+  public static ASSETS_BUCKRT = 'wechat-api-assets';
 
   // http
   public static HTTP_STATUS_400 = 400;

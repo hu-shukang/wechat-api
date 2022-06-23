@@ -13,7 +13,7 @@
     "test": "npm run compile && npm run unit",
     "deploy": "npm run compile && sam deploy && npm run clear",
     "local": "npm run compile && sam local start-api && npm run clear",
-    "clear": "rimraf src/function/**/*.js src/layer/APISharedLayer/nodejs/src/{model,utils,service}/{src/*,index}.js"
+    "clear": "rimraf {src,test}/function/**/*.js src/layer/APISharedLayer/nodejs/src/{model,utils,service,repository}/{src/*,test/*,index}.js"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.92",

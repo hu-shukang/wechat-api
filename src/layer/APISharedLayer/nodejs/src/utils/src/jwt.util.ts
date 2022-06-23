@@ -4,7 +4,6 @@ import { Const } from './const.util';
 
 class JwtUtil {
   private key: string = 'HUAajYAWMjWxNAS7ND9gnGbzFJccjdNEdimGJNcL';
-  private algorithm: jwt.Algorithm = 'RS256';
 
   /**
    * Tokenを生成する
@@ -18,7 +17,6 @@ class JwtUtil {
     };
     const options: jwt.SignOptions = {
       expiresIn: 60 * 60 * 24, // 有効期限1日
-      algorithm: this.algorithm,
     };
     return jwt.sign(payload, this.key, options);
   }
@@ -33,9 +31,7 @@ class JwtUtil {
     if (!token) {
       throw new HttpError(Const.HTTP_STATUS_401, Const.ERROR_LOGIN_REQUIRED);
     }
-    const options: jwt.VerifyOptions = {
-      algorithms: [this.algorithm],
-    };
+    const options: jwt.VerifyOptions = {};
     return jwt.verify(token, this.key, options) as TokenPayload;
   }
 }
