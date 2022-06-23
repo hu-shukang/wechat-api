@@ -19,7 +19,7 @@ Resources:
   UserTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: UserTable
+      TableName: WeChatAPI-UserTable
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
@@ -44,8 +44,8 @@ Resources:
   APISharedLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      LayerName: APISharedLayer
-      Description: 'APISharedLayer'
+      LayerName: WeChatAPI-APISharedLayer
+      Description: 'WeChatAPI-APISharedLayer'
       ContentUri: src/layer/APISharedLayer
       CompatibleRuntimes:
         - nodejs14.x
@@ -81,5 +81,50 @@ Resources:
           Type: Api
           Properties:
             Path: /user/register
+            Method: post
+            RestApiId: !Ref WeChatApi
+  ChatConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: WeChatAPI-ChatConnectFunction
+      CodeUri: src/function/chat/connect
+      Description: 'chat connect function'
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+      Events:
+        api:
+          Type: Api
+          Properties:
+            Path: /chat/connect
+            Method: get
+            RestApiId: !Ref WeChatApi
+  ChatDisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: WeChatAPI-ChatDisconnectFunction
+      CodeUri: src/function/chat/disconnect
+      Description: 'chat disconnect function'
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+      Events:
+        api:
+          Type: Api
+          Properties:
+            Path: /chat/disconnect
+            Method: get
+            RestApiId: !Ref WeChatApi
+  ChatSendMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: WeChatAPI-ChatSendMessageFunction
+      CodeUri: src/function/chat/send-message
+      Description: 'chat send message function'
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+      Events:
+        api:
+          Type: Api
+          Properties:
+            Path: /chat/message
             Method: post
             RestApiId: !Ref WeChatApi

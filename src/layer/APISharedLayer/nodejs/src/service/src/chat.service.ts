@@ -1,5 +1,5 @@
 import { ApiGatewayManagementApi } from 'aws-sdk';
-import { ChatModel, UserEntity } from 'model';
+import { Message, MessageForm, UserEntity } from 'model';
 import { userRepository } from 'repository';
 import { dateUtil } from 'utils';
 import { BaseService } from './base.service';
@@ -16,23 +16,23 @@ export class ChatService extends BaseService {
     await userRepository.deleteProperty(userId, 'connectionId');
   }
 
-  public async sendMessage(from: string, to: string, data: string) {
-    const toUser = await userRepository.getUserById(to);
+  public async sendMessage(userId: string, form: MessageForm) {
+    const toUser = await userRepository.getUserById(form.to);
     if (toUser && toUser.connectionId) {
       const params: ApiGatewayManagementApi.PostToConnectionRequest = {
         ConnectionId: toUser.connectionId,
-        Data: JSON.stringify(this.getMessageData(from, data)),
+        Data: JSON.stringify(this.getMessageData(userId, form)),
       };
       await this.apigwManagementApi.postToConnection(params).promise();
     } else {
-      console.log(`from: [${from}], to: [${to}], not exist`);
+      console.log(`from: [${userId}], to: [${form.to}], not exist`);
     }
   }
 
-  private getMessageData(from: string, data: string): ChatModel {
+  private getMessageData(from: string, form: MessageForm): Message {
     return {
       from: from,
-      message: data,
+      message: form.message,
       time: dateUtil.current(),
     };
   }
