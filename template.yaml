@@ -195,8 +195,9 @@ Resources:
   #==============================================================
   WeChatApi:
     Type: AWS::Serverless::Api
+    Name: WeChat-APP-API
     Properties:
-      StageName: Dev
+      StageName: !Sub ${Dev}
   UserRegisterFunction:
     Type: AWS::Serverless::Function
     Properties:
