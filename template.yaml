@@ -14,8 +14,16 @@ Globals:
     Handler: index.handler
     Layers:
       - !Ref APISharedLayer
+Parameters:
+  Stage:
+    Description: 'stage name when deploy'
+    Type: String
+    Default: Dev
 
 Resources:
+  #==============================================================
+  # DynamoDB定義
+  #==============================================================
   UserTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -50,30 +58,32 @@ Resources:
       CompatibleRuntimes:
         - nodejs14.x
       RetentionPolicy: Retain
-  # TokenAuthorizerFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: WeChatAPI-TokenAuthorizerFunction
-  #     CodeUri: src/function/authorizer/token
-  #     Policies:
-  #       - arn:aws:iam::aws:policy/AmazonSSMFullAccess
-  WeChatApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: Dev
-      # Auth:
-      #   DefaultAuthorizer: TokenAuthorizer
-      #   Authorizers:
-      #     TokenAuthorizer:
-      #       FunctionArn: !GetAtt TokenAuthorizerFunction.Arn
-      #       Identity:
-      #         ReauthorizeEvery: 0
+  #==============================================================
+  # WeChat-WebSocket-API定義
+  #==============================================================
   WeChatWebSocket:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: WeChatAPI-WebSocket
+      Name: WeChat-WebSocket-API
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: '$request.body.action'
+  # WebSocket Connect
+  ChatConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: WeChatAPI-ChatConnectFunction
+      CodeUri: src/function/chat/connect
+      Description: 'chat connect function'
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+  ChatConnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - WeChatWebSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ChatConnectFunction
+      Principal: apigateway.amazonaws.com
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -93,6 +103,23 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri:
         Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ChatConnectFunction.Arn}/invocations
+  # WebSocket Disconnect
+  ChatDisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: WeChatAPI-ChatDisconnectFunction
+      CodeUri: src/function/chat/disconnect
+      Description: 'chat disconnect function'
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+  ChatDisconnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - WeChatWebSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ChatDisconnectFunction
+      Principal: apigateway.amazonaws.com
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -112,6 +139,23 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri:
         Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ChatDisconnectFunction.Arn}/invocations
+  # WebSocket Disconnect
+  ChatSendMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: WeChatAPI-ChatSendMessageFunction
+      CodeUri: src/function/chat/send-message
+      Description: 'chat send message function'
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+  ChatSendMessagePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - WeChatWebSocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ChatSendMessageFunction
+      Principal: apigateway.amazonaws.com
   SendRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -131,6 +175,28 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri:
         Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ChatSendMessageFunction.Arn}/invocations
+  WebSocketDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - DisconnectRoute
+      - SendRoute
+    Properties:
+      ApiId: !Ref WeChatWebSocket
+  WebSocketStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: !Sub ${Dev}
+      Description: Dev Stage
+      DeploymentId: !Ref Deployment
+      ApiId: !Ref WeChatWebSocket
+  #==============================================================
+  # WeChat-APP-API定義
+  #==============================================================
+  WeChatApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Dev
   UserRegisterFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -146,66 +212,3 @@ Resources:
             Path: /user/register
             Method: post
             RestApiId: !Ref WeChatApi
-  ChatConnectFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: WeChatAPI-ChatConnectFunction
-      CodeUri: src/function/chat/connect
-      Description: 'chat connect function'
-      Policies:
-        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
-  ChatDisconnectFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: WeChatAPI-ChatDisconnectFunction
-      CodeUri: src/function/chat/disconnect
-      Description: 'chat disconnect function'
-      Policies:
-        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
-  ChatSendMessageFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: WeChatAPI-ChatSendMessageFunction
-      CodeUri: src/function/chat/send-message
-      Description: 'chat send message function'
-      Policies:
-        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
-  ChatConnectPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - WeChatWebSocket
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref ChatConnectFunction
-      Principal: apigateway.amazonaws.com
-  ChatDisconnectPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - WeChatWebSocket
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref ChatDisconnectFunction
-      Principal: apigateway.amazonaws.com
-  ChatSendMessagePermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - WeChatWebSocket
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref ChatSendMessageFunction
-      Principal: apigateway.amazonaws.com
-  Deployment:
-    Type: AWS::ApiGatewayV2::Deployment
-    DependsOn:
-      - ConnectRoute
-      - SendRoute
-      - DisconnectRoute
-    Properties:
-      ApiId: !Ref WeChatWebSocket
-  Stage:
-    Type: AWS::ApiGatewayV2::Stage
-    Properties:
-      StageName: Dev
-      Description: Dev Stage
-      DeploymentId: !Ref Deployment
-      ApiId: !Ref WeChatWebSocket
