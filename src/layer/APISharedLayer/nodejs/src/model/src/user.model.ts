@@ -16,3 +16,8 @@ export interface UserCreateForm {
 export interface AvatorSingedUrlForm {
   extensions: string;
 }
+
+export interface LoginForm {
+  name: string;
+  password: string;
+}

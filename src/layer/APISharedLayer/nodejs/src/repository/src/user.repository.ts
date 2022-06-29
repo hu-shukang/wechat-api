@@ -85,4 +85,26 @@ export class UserRepository extends BaseRepository {
     const result = await this.docClient.query(params).promise();
     return result.Count != undefined && result.Count > 0;
   }
+
+  public async existUserNameAndPassword(name: String, password: String): Promise<UserEntity | undefined> {
+    const params: DocumentClient.QueryInput = {
+      TableName: Const.USER_TABLE,
+      IndexName: Const.USER_TABLE_NAME_INDEX,
+      KeyConditionExpression: '#name = :name',
+      FilterExpression: '#password = :password',
+      ExpressionAttributeNames: {
+        '#name': 'name',
+        '#password': 'password',
+      },
+      ExpressionAttributeValues: {
+        ':name': name,
+        ':password': password,
+      },
+    };
+    const result = await this.docClient.query(params).promise();
+    if (result.Items && result.Items.length == 1) {
+      return result.Items[0] as UserEntity;
+    }
+    return undefined;
+  }
 }

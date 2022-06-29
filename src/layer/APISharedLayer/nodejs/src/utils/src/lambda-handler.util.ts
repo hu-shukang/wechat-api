@@ -2,14 +2,14 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult, Co
 import { Func, TokenPayload } from 'model';
 import { jwtUtil } from './jwt.util';
 
-export const lambdaHandler = <T>(func: Func<T>, withLogin = true): APIGatewayProxyHandler => {
+export const lambdaHandler = <T>(func: Func<T>, withToken = true): APIGatewayProxyHandler => {
   return async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
     console.log('=======start======');
     console.log(JSON.stringify(context));
     console.log(JSON.stringify(event));
     try {
       let tokenPayload: TokenPayload | null = null;
-      if (withLogin) {
+      if (withToken) {
         const token = event.headers.Authorization;
         tokenPayload = jwtUtil.verityToken(token);
       }

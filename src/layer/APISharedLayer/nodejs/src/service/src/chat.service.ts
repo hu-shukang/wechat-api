@@ -16,18 +16,17 @@ export class ChatService extends BaseService {
     await userRepository.deleteProperty(userId, 'connectionId');
   }
 
-  public async sendMessage(userId: string, form: MessageForm) {
-    console.log(JSON.stringify(form));
-    const toUser = await userRepository.getUserById(form.to);
-    if (toUser && toUser.connectionId) {
-      const params: ApiGatewayManagementApi.PostToConnectionRequest = {
-        ConnectionId: toUser.connectionId,
-        Data: JSON.stringify(this.getMessageData(userId, form)),
-      };
-      await this.apigwManagementApi.postToConnection(params).promise();
-    } else {
-      console.log(`from: [${userId}], to: [${form.to}], not exist`);
-    }
+  public async sendMessage(connectionId: string, form: MessageForm) {
+    // const toUser = await userRepository.getUserById(form.to);
+    // if (toUser && toUser.connectionId) {
+    //   const params: ApiGatewayManagementApi.PostToConnectionRequest = {
+    //     ConnectionId: toUser.connectionId,
+    //     Data: JSON.stringify(this.getMessageData(userId, form)),
+    //   };
+    //   await this.apigwManagementApi.postToConnection(params).promise();
+    // } else {
+    //   console.log(`from: [${userId}], to: [${form.to}], not exist`);
+    // }
   }
 
   private getMessageData(from: string, form: MessageForm): Message {
