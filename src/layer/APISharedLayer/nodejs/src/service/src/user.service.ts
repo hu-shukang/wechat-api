@@ -1,4 +1,4 @@
-import { HttpError, LoginForm, UserCreateForm, UserEntity } from 'model';
+import { HttpError, LoginForm, LoginResponse, UserCreateForm, UserEntity } from 'model';
 import { userRepository } from 'repository';
 import { Const, cryptoUtil, jwtUtil } from 'utils';
 import { BaseService } from './base.service';
@@ -20,13 +20,16 @@ export class UserService extends BaseService {
     return token;
   }
 
-  public async login(form: LoginForm): Promise<string> {
+  public async login(form: LoginForm): Promise<LoginResponse> {
     const password = cryptoUtil.hash(form.password);
     const user = await userRepository.existUserNameAndPassword(form.name, password);
     if (user == undefined) {
-      throw new HttpError(Const.HTTP_STATUS_400, 'ユーザ名やパスワード不正です');
+      throw new HttpError(Const.HTTP_STATUS_401, 'ユーザ名やパスワード不正です');
     }
     const token = jwtUtil.createToken(user.id);
-    return token;
+    const resp: LoginResponse = {
+      token: token,
+    };
+    return resp;
   }
 }

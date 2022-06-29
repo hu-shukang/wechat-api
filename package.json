@@ -12,6 +12,7 @@
     "compile": "tsc",
     "test": "npm run compile && npm run unit",
     "deploy": "npm run compile && sam deploy && npm run clear",
+    "destroy": "sam delete wechat-api",
     "local": "npm run compile && sam local start-api && npm run clear",
     "clear": "rimraf {src,test}/function/**/*.js src/layer/APISharedLayer/nodejs/src/{model,utils,service,repository}/{src/*,test/*,index}.js"
   },

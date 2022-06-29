@@ -47,7 +47,7 @@ Resources:
             - AttributeName: name
               KeyType: HASH
           Projection:
-            ProjectionType: KEYS_ONLY
+            ProjectionType: ALL
           ProvisionedThroughput:
             ReadCapacityUnits: 5
             WriteCapacityUnits: 5

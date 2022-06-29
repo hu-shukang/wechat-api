@@ -6,14 +6,18 @@ export const schema: JSONSchemaType<LoginForm> = {
   properties: {
     name: {
       type: 'string',
+      minLength: 1,
       errorMessage: {
-        type: 'イメージ拡張子は文字列型です',
+        type: 'ユーザ名は文字列型です',
+        minLength: 'ユーザ名は必須です',
       },
     },
     password: {
       type: 'string',
+      minLength: 1,
       errorMessage: {
-        type: 'イメージ拡張子は文字列型です',
+        type: 'パスワードは文字列型です',
+        minLength: 'パスワードは必須です',
       },
     },
   },
@@ -22,7 +26,7 @@ export const schema: JSONSchemaType<LoginForm> = {
     type: 'JSONフォーマットは正しくない',
     required: {
       name: 'ユーザ名は必須です',
-      password: 'ユーザ名は必須です',
+      password: 'パスワードは必須です',
     },
     additionalProperties: '要求外のフィールドがありました',
   },
