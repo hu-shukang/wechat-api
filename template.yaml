@@ -197,9 +197,9 @@ Resources:
   WebSocketStage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
-      StageName: !Sub ${Dev}
+      StageName: !Sub ${Stage}
       Description: Dev Stage
-      DeploymentId: !Ref Deployment
+      DeploymentId: !Ref WebSocketDeployment
       ApiId: !Ref WeChatWebSocket
   #==============================================================
   # WeChat-APP-API定義
@@ -208,7 +208,7 @@ Resources:
     Type: AWS::Serverless::Api
     Name: WeChat-APP-API
     Properties:
-      StageName: !Sub ${Dev}
+      StageName: !Sub ${Stage}
   UserLoginFunction:
     Type: AWS::Serverless::Function
     Properties:
