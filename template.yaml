@@ -246,3 +246,42 @@ Resources:
             Path: /user/register
             Method: post
             RestApiId: !Ref WeChatApi
+  #
+  TestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: WeChatAPI-TestFunction
+      CodeUri: src/function/test
+      Description: 'test function'
+  AddScheduleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: WeChatAPI-AddScheduleFunction
+      CodeUri: src/function/schedule/add
+      Description: 'add schedule function'
+      Policies:
+        - arn:aws:iam::aws:policy/CloudWatchEventsFullAccess
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+      Events:
+        api:
+          Type: Api
+          Properties:
+            Path: /schedule
+            Method: post
+            RestApiId: !Ref WeChatApi
+  DeleteScheduleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: WeChatAPI-DeleteScheduleFunction
+      CodeUri: src/function/schedule/delete
+      Description: 'delete schedule function'
+      Policies:
+        - arn:aws:iam::aws:policy/CloudWatchEventsFullAccess
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+      Events:
+        api:
+          Type: Api
+          Properties:
+            Path: /schedule
+            Method: delete
+            RestApiId: !Ref WeChatApi
