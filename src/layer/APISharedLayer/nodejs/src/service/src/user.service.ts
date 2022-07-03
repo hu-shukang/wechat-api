@@ -5,8 +5,8 @@ import { BaseService } from './base.service';
 
 export class UserService extends BaseService {
   public async createUser(form: UserCreateForm): Promise<string> {
-    const isExist = await userRepository.existUserName(form.name);
-    if (isExist) {
+    const user = await userRepository.getUserByName(form.name);
+    if (user) {
       throw new HttpError(Const.HTTP_STATUS_400, 'このユーザ名既に存在しています。別の名前を指定してください');
     }
     const id = cryptoUtil.id();
@@ -22,13 +22,14 @@ export class UserService extends BaseService {
 
   public async login(form: LoginForm): Promise<LoginResponse> {
     const password = cryptoUtil.hash(form.password);
-    const user = await userRepository.existUserNameAndPassword(form.name, password);
-    if (user == undefined) {
+    const user = await userRepository.getUserByName(form.name);
+    if (user == undefined || password !== user.password) {
       throw new HttpError(Const.HTTP_STATUS_401, 'ユーザ名やパスワード不正です');
     }
     const token = jwtUtil.createToken(user.id);
     const resp: LoginResponse = {
       token: token,
+      avator: user.avator,
     };
     return resp;
   }

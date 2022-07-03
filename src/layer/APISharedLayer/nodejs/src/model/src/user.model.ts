@@ -1,3 +1,5 @@
+import { Message } from './chat.model';
+
 export interface UserEntity {
   id: string;
   name: string;
@@ -22,6 +24,14 @@ export interface LoginForm {
   password: string;
 }
 
+export interface FriendVO {
+  id: string;
+  name: string;
+  avator?: string;
+  message: Message[];
+}
+
 export interface LoginResponse {
   token: string;
+  avator?: string;
 }

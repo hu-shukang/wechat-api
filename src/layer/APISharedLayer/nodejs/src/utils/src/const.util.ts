@@ -4,6 +4,8 @@ export class Const {
   // table name
   public static USER_TABLE = 'WeChatAPI-UserTable';
   public static USER_TABLE_NAME_INDEX = 'name_index';
+  public static CHAT_TABLE = 'WeChatAPI-ChatTable';
+  public static CHAT_TABLE_INDEX_1 = 'chat_index_1';
 
   // bucket name
   public static ASSETS_BUCKRT = 'wechat-api-assets';

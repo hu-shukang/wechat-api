@@ -67,6 +67,39 @@ Resources:
           ProvisionedThroughput:
             ReadCapacityUnits: 5
             WriteCapacityUnits: 5
+  ChatTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: WeChatAPI-ChatTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: prop
+          AttributeType: S
+        - AttributeName: gsipk
+          AttributeType: S
+        - AttributeName: gsisk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: prop
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: chat_index_1
+          KeySchema:
+            - AttributeName: gsipk
+              KeyType: HASH
+            - AttributeName: gsisk
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
   APISharedLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:

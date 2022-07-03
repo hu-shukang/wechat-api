@@ -70,7 +70,7 @@ export class UserRepository extends BaseRepository {
     return undefined;
   }
 
-  public async existUserName(name: string): Promise<boolean> {
+  public async getUserByName(name: string): Promise<UserEntity | undefined> {
     const params: DocumentClient.QueryInput = {
       TableName: Const.USER_TABLE,
       IndexName: Const.USER_TABLE_NAME_INDEX,
@@ -80,25 +80,6 @@ export class UserRepository extends BaseRepository {
       },
       ExpressionAttributeValues: {
         ':name': name,
-      },
-    };
-    const result = await this.docClient.query(params).promise();
-    return result.Count != undefined && result.Count > 0;
-  }
-
-  public async existUserNameAndPassword(name: String, password: String): Promise<UserEntity | undefined> {
-    const params: DocumentClient.QueryInput = {
-      TableName: Const.USER_TABLE,
-      IndexName: Const.USER_TABLE_NAME_INDEX,
-      KeyConditionExpression: '#name = :name',
-      FilterExpression: '#password = :password',
-      ExpressionAttributeNames: {
-        '#name': 'name',
-        '#password': 'password',
-      },
-      ExpressionAttributeValues: {
-        ':name': name,
-        ':password': password,
       },
     };
     const result = await this.docClient.query(params).promise();

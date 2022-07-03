@@ -1,6 +1,6 @@
 import { ApiGatewayManagementApi } from 'aws-sdk';
-import { Message, MessageForm, UserEntity } from 'model';
-import { userRepository } from 'repository';
+import { Chat, Message, UserEntity } from 'model';
+import { chatRepository, userRepository } from 'repository';
 import { dateUtil } from 'utils';
 import { BaseService } from './base.service';
 
@@ -16,7 +16,7 @@ export class ChatService extends BaseService {
     await userRepository.deleteProperty(userId, 'connectionId');
   }
 
-  public async sendMessage(connectionId: string, form: MessageForm) {
+  public async sendMessage(connectionId: string, form: any) {
     // const toUser = await userRepository.getUserById(form.to);
     // if (toUser && toUser.connectionId) {
     //   const params: ApiGatewayManagementApi.PostToConnectionRequest = {
@@ -29,11 +29,19 @@ export class ChatService extends BaseService {
     // }
   }
 
-  private getMessageData(from: string, form: MessageForm): Message {
-    return {
-      from: from,
-      message: form.message,
-      time: dateUtil.current(),
-    };
+  // private getMessageData(from: string, form: MessageForm): Message {
+  //   return {
+  //     from: from,
+  //     to: '',
+  //     message: form.message,
+  //     time: dateUtil.current(),
+  //   };
+  // }
+
+  public async getChatListByUserId(userId: string): Promise<Chat[]> {
+    const roomIdList = await chatRepository.getRoomIdsByUserId(userId);
+    const promiseList = roomIdList.map((roomId) => chatRepository.getChatByRoomId(roomId));
+    const resultAll = await Promise.all(promiseList);
+    return resultAll.filter((item) => item != undefined) as Chat[];
   }
 }
