@@ -35,3 +35,7 @@ export interface LoginResponse {
   token: string;
   avator?: string;
 }
+
+export interface SignUpResponse {
+  token: string;
+}

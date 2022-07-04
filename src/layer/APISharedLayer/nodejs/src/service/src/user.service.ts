@@ -1,10 +1,10 @@
-import { HttpError, LoginForm, LoginResponse, UserCreateForm, UserEntity } from 'model';
+import { HttpError, LoginForm, LoginResponse, SignUpResponse, UserCreateForm, UserEntity } from 'model';
 import { userRepository } from 'repository';
 import { Const, cryptoUtil, jwtUtil } from 'utils';
 import { BaseService } from './base.service';
 
 export class UserService extends BaseService {
-  public async createUser(form: UserCreateForm): Promise<string> {
+  public async createUser(form: UserCreateForm): Promise<SignUpResponse> {
     const user = await userRepository.getUserByName(form.name);
     if (user) {
       throw new HttpError(Const.HTTP_STATUS_400, 'このユーザ名既に存在しています。別の名前を指定してください');
@@ -17,7 +17,9 @@ export class UserService extends BaseService {
     };
     await userRepository.createUser(userEntity);
     const token = jwtUtil.createToken(id);
-    return token;
+    return {
+      token: token,
+    };
   }
 
   public async login(form: LoginForm): Promise<LoginResponse> {

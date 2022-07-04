@@ -2,8 +2,14 @@ import { JSONSchemaType, MessageForm, UserCreateForm } from 'model';
 
 export const schema: JSONSchemaType<MessageForm> = {
   type: 'object',
-  required: ['message', 'to'],
+  required: ['token', 'message', 'to'],
   properties: {
+    token: {
+      type: 'string',
+      errorMessage: {
+        type: 'tokenは文字列型です',
+      },
+    },
     to: {
       type: 'string',
       errorMessage: {
@@ -21,6 +27,7 @@ export const schema: JSONSchemaType<MessageForm> = {
   errorMessage: {
     type: 'JSONフォーマットは正しくない',
     required: {
+      token: 'tokenは必須です',
       to: 'toは必須です',
       message: 'messageは必須です',
     },

@@ -1,7 +1,7 @@
 import { ApiGatewayManagementApi } from 'aws-sdk';
-import { Chat, Message, UserEntity } from 'model';
+import { Chat, MessageForm, MessageVO, TokenPayload } from 'model';
 import { chatRepository, userRepository } from 'repository';
-import { dateUtil } from 'utils';
+import { dateUtil, jwtUtil } from 'utils';
 import { BaseService } from './base.service';
 
 export class ChatService extends BaseService {
@@ -16,27 +16,28 @@ export class ChatService extends BaseService {
     await userRepository.deleteProperty(userId, 'connectionId');
   }
 
-  public async sendMessage(connectionId: string, form: any) {
-    // const toUser = await userRepository.getUserById(form.to);
-    // if (toUser && toUser.connectionId) {
-    //   const params: ApiGatewayManagementApi.PostToConnectionRequest = {
-    //     ConnectionId: toUser.connectionId,
-    //     Data: JSON.stringify(this.getMessageData(userId, form)),
-    //   };
-    //   await this.apigwManagementApi.postToConnection(params).promise();
-    // } else {
-    //   console.log(`from: [${userId}], to: [${form.to}], not exist`);
-    // }
+  public async sendMessage(connectionId: string, form: MessageForm) {
+    let tokenPayload: TokenPayload = jwtUtil.verityToken(form.token);
+    const toUser = await userRepository.getUserById(form.to);
+    if (toUser && toUser.connectionId) {
+      const params: ApiGatewayManagementApi.PostToConnectionRequest = {
+        ConnectionId: toUser.connectionId,
+        Data: JSON.stringify(this.getMessageData(tokenPayload.userId, toUser.id, form.message)),
+      };
+      await this.apigwManagementApi.postToConnection(params).promise();
+    } else {
+      console.log(`from: [${tokenPayload.userId}], to: [${form.to}], not exist`);
+    }
   }
 
-  // private getMessageData(from: string, form: MessageForm): Message {
-  //   return {
-  //     from: from,
-  //     to: '',
-  //     message: form.message,
-  //     time: dateUtil.current(),
-  //   };
-  // }
+  private getMessageData(from: string, to: string, message: string): MessageVO {
+    return {
+      from: from,
+      to: to,
+      message: message,
+      time: dateUtil.current(),
+    };
+  }
 
   public async getChatListByUserId(userId: string): Promise<Chat[]> {
     const roomIdList = await chatRepository.getRoomIdsByUserId(userId);
